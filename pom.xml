@@ -42,6 +42,7 @@
         <module>mousetrack</module>
         <module>termcap</module>
         <module>colors</module>
+        <module>image</module>
     </modules>
 
     <properties>
