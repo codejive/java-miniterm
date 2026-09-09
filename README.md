@@ -11,6 +11,7 @@ Two variants are available:
 And then we have utility modules (the "built on top"):
 - **[`ansiparser`](ansiparser/README.md)** — compact ANSI escape sequence parser
 - **[`colors`](colors/README.md)** — terminal colour palette querying and setting
+- **[`image`](image/README.md)** — terminal image rendering and protocol detection
 - **[`mousetrack`](mousetrack/README.md)** — terminal mouse-tracking helpers and event parser
 - **[`termcap`](termcap/README.md)** — terminal capability detection
 
@@ -108,13 +109,14 @@ if (bg != null) {
 
 ## Modules
 
-Three artifacts are published independently:
+Several artifacts are published independently:
 
 | Artifact | Description |
 |----------|-------------|
 | [`miniterm`](miniterm/README.md) | Legacy terminal implementation, Java 8+ |
 | [`miniterm-ffm`](miniterm-ffm/README.md) | Modern FFM-based terminal implementation, Java 22+ |
 | [`ansiparser`](ansiparser/README.md) | Compact ANSI escape sequence parser, Java 8+ |
+| [`image`](image/README.md) | Terminal image rendering and protocol detection, Java 8+ |
 | [`mousetrack`](mousetrack/README.md) | Terminal mouse-tracking helpers and event parser, Java 8+ |
 | [`termcap`](termcap/README.md) | Terminal capability detection, Java 8+ |
 | [`colors`](colors/README.md) | Terminal colour palette querying and setting via OSC sequences, Java 8+ |
