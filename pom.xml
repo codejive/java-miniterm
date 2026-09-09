@@ -57,7 +57,7 @@
         <version.assertj>3.27.7</version.assertj>
 
         <!-- Plugin versions -->
-        <version.spotless>3.4.0</version.spotless>
+        <version.spotless>3.10.2</version.spotless>
         <version.google-java-format>1.22.0</version.google-java-format>
         <version.maven-enforcer>3.6.2</version.maven-enforcer>
         <version.maven-source>3.3.1</version.maven-source>
