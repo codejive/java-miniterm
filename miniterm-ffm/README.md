@@ -46,7 +46,7 @@ while (true) {
 ### JBang
 
 ```java
-//DEPS org.codejive.miniterm:miniterm-ffm:0.1.5
+//DEPS org.codejive.miniterm:miniterm-ffm:0.1.6
 ```
 
 ### Maven
@@ -55,14 +55,14 @@ while (true) {
 <dependency>
     <groupId>org.codejive.miniterm</groupId>
     <artifactId>miniterm-ffm</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```kotlin
-implementation("org.codejive.miniterm:miniterm-ffm:0.1.5")
+implementation("org.codejive.miniterm:miniterm-ffm:0.1.6")
 ```
 
 ## Building

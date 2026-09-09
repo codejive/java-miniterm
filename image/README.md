@@ -69,8 +69,8 @@ The rendering work is cached. When you change the target size or fit mode, the e
 ### JBang
 
 ```java
-//DEPS org.codejive.miniterm:image:0.1.5
-//DEPS org.codejive.miniterm:ansiparser:0.1.5
+//DEPS org.codejive.miniterm:image:0.1.6
+//DEPS org.codejive.miniterm:ansiparser:0.1.6
 ```
 
 ### Maven
@@ -79,20 +79,20 @@ The rendering work is cached. When you change the target size or fit mode, the e
 <dependency>
     <groupId>org.codejive.miniterm</groupId>
     <artifactId>image</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
 </dependency>
 <dependency>
     <groupId>org.codejive.miniterm</groupId>
     <artifactId>ansiparser</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```kotlin
-implementation("org.codejive.miniterm:image:0.1.5")
-implementation("org.codejive.miniterm:ansiparser:0.1.5")
+implementation("org.codejive.miniterm:image:0.1.6")
+implementation("org.codejive.miniterm:ansiparser:0.1.6")
 ```
 
 ## Building

@@ -133,7 +133,7 @@ Not all terminals support mode 1016; check the terminal's documentation before r
 ### JBang
 
 ```java
-//DEPS org.codejive.miniterm:mousetrack:0.1.5
+//DEPS org.codejive.miniterm:mousetrack:0.1.6
 ```
 
 ### Maven
@@ -142,14 +142,14 @@ Not all terminals support mode 1016; check the terminal's documentation before r
 <dependency>
     <groupId>org.codejive.miniterm</groupId>
     <artifactId>mousetrack</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```kotlin
-implementation("org.codejive.miniterm:mousetrack:0.1.5")
+implementation("org.codejive.miniterm:mousetrack:0.1.6")
 ```
 
 ## Building
