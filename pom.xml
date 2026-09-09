@@ -59,7 +59,7 @@
         <!-- Plugin versions -->
         <version.spotless>3.10.2</version.spotless>
         <version.google-java-format>1.22.0</version.google-java-format>
-        <version.maven-enforcer>3.6.2</version.maven-enforcer>
+        <version.maven-enforcer>3.6.3</version.maven-enforcer>
         <version.maven-source>3.3.1</version.maven-source>
         <version.maven-javadoc>3.11.2</version.maven-javadoc>
         <version.build-helper>3.6.0</version.build-helper>
