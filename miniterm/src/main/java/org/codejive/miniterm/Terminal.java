@@ -42,6 +42,19 @@ public interface Terminal extends Appendable, AutoCloseable {
     Size size() throws IOException;
 
     /**
+     * Helper function for when the only thing you need is the size of the terminal.
+     *
+     * @return the terminal size, or null if it cannot be determined
+     */
+    static Size querySize() {
+        try (Terminal term = Terminal.create()) {
+            return term.size();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
      * Reads a single character from the terminal with timeout.
      *
      * @param timeoutMs timeout in milliseconds (-1 for infinite, 0 for non-blocking)
