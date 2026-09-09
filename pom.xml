@@ -50,7 +50,7 @@
         <skipITs>true</skipITs>
 
         <!-- Dependency versions -->
-        <version.jspecify>1.0.0</version.jspecify>
+        <version.jspecify>1.0.1</version.jspecify>
 
         <!-- Test dependency versions -->
         <version.junit>6.0.3</version.junit>
