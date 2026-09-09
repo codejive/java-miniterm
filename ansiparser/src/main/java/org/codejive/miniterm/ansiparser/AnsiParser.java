@@ -1,5 +1,7 @@
 package org.codejive.miniterm.ansiparser;
 
+import static org.codejive.miniterm.ansiparser.Ansi.ESC;
+
 import java.io.IOException;
 
 /**
@@ -25,8 +27,6 @@ public final class AnsiParser {
 
     /** Maximum number of characters accumulated before truncating a runaway sequence. */
     public static final int MAX_SEQUENCE_LENGTH = 2048;
-
-    private static final int ESC = 0x1B;
 
     // FSM states
     private static final int S_INIT = 0;

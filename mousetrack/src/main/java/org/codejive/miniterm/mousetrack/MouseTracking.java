@@ -1,6 +1,7 @@
 package org.codejive.miniterm.mousetrack;
 
 import java.io.IOException;
+import org.codejive.miniterm.ansiparser.Ansi;
 
 /**
  * Utility class for controlling terminal mouse tracking and parsing mouse event sequences.
@@ -67,20 +68,20 @@ public final class MouseTracking {
          *
          * <p>Coordinates are limited to 223 columns/rows in the default encoding.
          */
-        X10(9),
+        X10(Ansi.MODE_MOUSE_X10),
 
         /**
          * Normal tracking mode (DEC mode 1000): reports button-press and button-release events.
          *
          * <p>This is the most widely supported mode and is a good default choice.
          */
-        NORMAL(1000),
+        NORMAL(Ansi.MODE_MOUSE_BUTTON),
 
         /**
          * Button-motion tracking mode (DEC mode 1002): extends {@link #NORMAL} with drag events
          * (mouse moved while a button is held).
          */
-        BUTTON_MOTION(1002),
+        BUTTON_MOTION(Ansi.MODE_MOUSE_DRAG),
 
         /**
          * Any-motion tracking mode (DEC mode 1003): extends {@link #BUTTON_MOTION} with hover
@@ -88,7 +89,7 @@ public final class MouseTracking {
          *
          * <p>Generates a large number of events; use with care.
          */
-        ANY_MOTION(1003);
+        ANY_MOTION(Ansi.MODE_MOUSE_FULL);
 
         private final int modeNumber;
 
@@ -115,7 +116,7 @@ public final class MouseTracking {
          *
          * <p>Deprecated by many terminals; prefer {@link #SGR}.
          */
-        UTF8(1005),
+        UTF8(Ansi.MODE_MOUSE_UTF8),
 
         /**
          * SGR extended encoding (DEC mode 1006).
@@ -123,7 +124,7 @@ public final class MouseTracking {
          * <p>Encodes all fields as decimal numbers; no coordinate limit. Releases are unambiguously
          * identified by the {@code 'm'} terminator. <b>Recommended for new code.</b>
          */
-        SGR(1006),
+        SGR(Ansi.MODE_MOUSE_SGR),
 
         /**
          * URXVT extended encoding (DEC mode 1015).
@@ -131,7 +132,7 @@ public final class MouseTracking {
          * <p>Encodes coordinates as decimal numbers without limit, but does not identify which
          * button was released.
          */
-        URXVT(1015),
+        URXVT(Ansi.MODE_MOUSE_URXVT),
 
         /**
          * SGR-Pixels encoding (DEC mode 1016).
@@ -139,7 +140,7 @@ public final class MouseTracking {
          * <p>Extends {@link #SGR} to report pixel-level coordinates instead of character-cell
          * coordinates. Requires {@link #SGR} to be enabled first. Not supported by all terminals.
          */
-        SGR_PIXELS(1016);
+        SGR_PIXELS(Ansi.MODE_MOUSE_SGR_PIXELS);
 
         private final int modeNumber;
 
@@ -151,10 +152,6 @@ public final class MouseTracking {
             return modeNumber;
         }
     }
-
-    private static final String CSI = "\033[";
-    private static final String DEC_SET = "h";
-    private static final String DEC_RST = "l";
 
     private MouseTracking() {}
 
@@ -171,7 +168,7 @@ public final class MouseTracking {
      * @throws IOException if writing to {@code out} fails
      */
     public static void enable(Appendable out, Protocol protocol) throws IOException {
-        setMode(out, protocol.getModeNumber(), true);
+        Ansi.modeSet(out, protocol.getModeNumber(), true);
     }
 
     /**
@@ -184,7 +181,7 @@ public final class MouseTracking {
      * @throws IOException if writing to {@code out} fails
      */
     public static void disable(Appendable out, Protocol protocol) throws IOException {
-        setMode(out, protocol.getModeNumber(), false);
+        Ansi.modeSet(out, protocol.getModeNumber(), false);
     }
 
     // ── encoding enable/disable ───────────────────────────────────────────────
@@ -200,7 +197,7 @@ public final class MouseTracking {
      * @throws IOException if writing to {@code out} fails
      */
     public static void enableEncoding(Appendable out, Encoding encoding) throws IOException {
-        setMode(out, encoding.getModeNumber(), true);
+        Ansi.modeSet(out, encoding.getModeNumber(), true);
     }
 
     /**
@@ -213,7 +210,7 @@ public final class MouseTracking {
      * @throws IOException if writing to {@code out} fails
      */
     public static void disableEncoding(Appendable out, Encoding encoding) throws IOException {
-        setMode(out, encoding.getModeNumber(), false);
+        Ansi.modeSet(out, encoding.getModeNumber(), false);
     }
 
     // ── detection ─────────────────────────────────────────────────────────────
@@ -277,13 +274,6 @@ public final class MouseTracking {
     }
 
     // ── private helpers ───────────────────────────────────────────────────────
-
-    private static void setMode(Appendable out, int mode, boolean enable) throws IOException {
-        out.append(CSI);
-        out.append('?');
-        out.append(Integer.toString(mode));
-        out.append(enable ? DEC_SET : DEC_RST);
-    }
 
     /**
      * Parses a legacy X10 mouse sequence: {@code ESC [ M <b+32> <x+32> <y+32>}.

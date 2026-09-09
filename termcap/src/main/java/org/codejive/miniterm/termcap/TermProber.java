@@ -1,5 +1,7 @@
 package org.codejive.miniterm.termcap;
 
+import static org.codejive.miniterm.ansiparser.Ansi.CSI;
+
 import java.io.IOException;
 import org.codejive.miniterm.ansiparser.AnsiParser;
 import org.codejive.miniterm.ansiparser.IntReader;
@@ -44,8 +46,6 @@ import org.codejive.miniterm.ansiparser.IntReader;
  * {@code out} parameter.
  */
 public final class TermProber {
-
-    private static final String CSI = "\033[";
 
     // DA1 primary response prefix: ESC [ ?
     private static final String DA1_PREFIX = CSI + "?";

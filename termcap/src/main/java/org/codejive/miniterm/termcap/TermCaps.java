@@ -1,5 +1,10 @@
 package org.codejive.miniterm.termcap;
 
+import static org.codejive.miniterm.ansiparser.Ansi.CSI;
+import static org.codejive.miniterm.ansiparser.Ansi.OSC;
+import static org.codejive.miniterm.ansiparser.Ansi.OSC_BEL;
+import static org.codejive.miniterm.ansiparser.Ansi.OSC_ST;
+
 /**
  * Immutable snapshot of detected terminal capabilities.
  *
@@ -182,11 +187,6 @@ public final class TermCaps {
 
     // ── Terminal control helpers ──────────────────────────────────────────
 
-    private static final String CSI = "\033[";
-    private static final String OSC_PREFIX = "\033]";
-    private static final String OSC_BEL = "\007";
-    private static final String OSC_ST = "\033\\";
-
     /**
      * Enters the alternate screen buffer (DEC private mode 1049).
      *
@@ -334,7 +334,7 @@ public final class TermCaps {
      * @throws java.io.IOException if writing fails
      */
     public static void setTitle(Appendable out, String title) throws java.io.IOException {
-        out.append(OSC_PREFIX).append("0;").append(title).append(OSC_BEL);
+        out.append(OSC).append("0;").append(title).append(OSC_BEL);
     }
 
     /**
@@ -354,7 +354,7 @@ public final class TermCaps {
      * @throws java.io.IOException if writing fails
      */
     public static void openHyperlink(Appendable out, String uri) throws java.io.IOException {
-        out.append(OSC_PREFIX).append("8;;").append(uri).append(OSC_ST);
+        out.append(OSC).append("8;;").append(uri).append(OSC_ST);
     }
 
     /**
@@ -364,7 +364,7 @@ public final class TermCaps {
      * @throws java.io.IOException if writing fails
      */
     public static void closeHyperlink(Appendable out) throws java.io.IOException {
-        out.append(OSC_PREFIX).append("8;;").append(OSC_ST);
+        out.append(OSC).append("8;;").append(OSC_ST);
     }
 
     // ── Detection ─────────────────────────────────────────────────────────

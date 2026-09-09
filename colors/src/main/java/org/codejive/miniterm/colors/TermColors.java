@@ -1,5 +1,9 @@
 package org.codejive.miniterm.colors;
 
+import static org.codejive.miniterm.ansiparser.Ansi.OSC;
+import static org.codejive.miniterm.ansiparser.Ansi.OSC_BEL;
+import static org.codejive.miniterm.ansiparser.Ansi.OSC_ST;
+
 import java.io.IOException;
 import java.util.function.Function;
 import org.codejive.miniterm.ansiparser.AnsiParser;
@@ -75,10 +79,6 @@ public final class TermColors {
     /** Default per-query read timeout in milliseconds. */
     public static final int DEFAULT_TIMEOUT_MS = 500;
 
-    private static final String OSC_PREFIX = "\033]";
-    private static final String OSC_BEL = "\007";
-    private static final String OSC_ST = "\033\\";
-
     private TermColors() {}
 
     // ── Send query ────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void sendForegroundQuery(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("10;?").append(OSC_BEL);
+        out.append(OSC).append("10;?").append(OSC_BEL);
     }
 
     /**
@@ -106,7 +106,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void sendBackgroundQuery(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("11;?").append(OSC_BEL);
+        out.append(OSC).append("11;?").append(OSC_BEL);
     }
 
     /**
@@ -119,7 +119,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void sendCursorQuery(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("12;?").append(OSC_BEL);
+        out.append(OSC).append("12;?").append(OSC_BEL);
     }
 
     /**
@@ -135,7 +135,7 @@ public final class TermColors {
      */
     public static void sendColorQuery(Appendable out, int index) throws IOException {
         validateIndex(index);
-        out.append(OSC_PREFIX)
+        out.append(OSC)
                 .append("4;")
                 .append(String.valueOf(index))
                 .append(";")
@@ -259,7 +259,7 @@ public final class TermColors {
             String seq = sb.toString();
             if (seq.isEmpty()) break; // timeout — terminal has no more responses
 
-            if (!seq.startsWith(OSC_PREFIX)) continue;
+            if (!seq.startsWith(OSC)) continue;
             String body = oscBody(seq);
             if (body == null || !body.startsWith("4;")) continue;
 
@@ -295,7 +295,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void setForeground(Appendable out, Color color) throws IOException {
-        out.append(OSC_PREFIX).append("10;").append(color.toString()).append(OSC_BEL);
+        out.append(OSC).append("10;").append(color.toString()).append(OSC_BEL);
     }
 
     /**
@@ -306,7 +306,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void setBackground(Appendable out, Color color) throws IOException {
-        out.append(OSC_PREFIX).append("11;").append(color.toString()).append(OSC_BEL);
+        out.append(OSC).append("11;").append(color.toString()).append(OSC_BEL);
     }
 
     /**
@@ -317,7 +317,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void setCursor(Appendable out, Color color) throws IOException {
-        out.append(OSC_PREFIX).append("12;").append(color.toString()).append(OSC_BEL);
+        out.append(OSC).append("12;").append(color.toString()).append(OSC_BEL);
     }
 
     /**
@@ -331,7 +331,7 @@ public final class TermColors {
      */
     public static void setColor(Appendable out, int index, Color color) throws IOException {
         validateIndex(index);
-        out.append(OSC_PREFIX)
+        out.append(OSC)
                 .append("4;")
                 .append(String.valueOf(index))
                 .append(";")
@@ -370,7 +370,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void resetForeground(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("110").append(OSC_BEL);
+        out.append(OSC).append("110").append(OSC_BEL);
     }
 
     /**
@@ -380,7 +380,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void resetBackground(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("111").append(OSC_BEL);
+        out.append(OSC).append("111").append(OSC_BEL);
     }
 
     /**
@@ -390,7 +390,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void resetCursor(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("112").append(OSC_BEL);
+        out.append(OSC).append("112").append(OSC_BEL);
     }
 
     /**
@@ -403,7 +403,7 @@ public final class TermColors {
      */
     public static void resetColor(Appendable out, int index) throws IOException {
         validateIndex(index);
-        out.append(OSC_PREFIX).append("104;").append(String.valueOf(index)).append(OSC_BEL);
+        out.append(OSC).append("104;").append(String.valueOf(index)).append(OSC_BEL);
     }
 
     /**
@@ -413,7 +413,7 @@ public final class TermColors {
      * @throws IOException if writing fails
      */
     public static void resetPalette(Appendable out) throws IOException {
-        out.append(OSC_PREFIX).append("104").append(OSC_BEL);
+        out.append(OSC).append("104").append(OSC_BEL);
     }
 
     // ── Detection ─────────────────────────────────────────────────────────
@@ -424,7 +424,7 @@ public final class TermColors {
      * @param seq raw escape sequence to test
      */
     public static boolean isForegroundQueryResult(String seq) {
-        return seq != null && seq.startsWith(OSC_PREFIX + "10;");
+        return seq != null && seq.startsWith(OSC + "10;");
     }
 
     /**
@@ -433,7 +433,7 @@ public final class TermColors {
      * @param seq raw escape sequence to test
      */
     public static boolean isBackgroundQueryResult(String seq) {
-        return seq != null && seq.startsWith(OSC_PREFIX + "11;");
+        return seq != null && seq.startsWith(OSC + "11;");
     }
 
     /**
@@ -442,7 +442,7 @@ public final class TermColors {
      * @param seq raw escape sequence to test
      */
     public static boolean isCursorQueryResult(String seq) {
-        return seq != null && seq.startsWith(OSC_PREFIX + "12;");
+        return seq != null && seq.startsWith(OSC + "12;");
     }
 
     /**
@@ -451,7 +451,7 @@ public final class TermColors {
      * @param seq raw escape sequence to test
      */
     public static boolean isColorQueryResult(String seq) {
-        return seq != null && seq.startsWith(OSC_PREFIX + "4;");
+        return seq != null && seq.startsWith(OSC + "4;");
     }
 
     /**
@@ -461,7 +461,7 @@ public final class TermColors {
      * @param index expected palette index (0–255)
      */
     public static boolean isColorQueryResult(String seq, int index) {
-        return seq != null && seq.startsWith(OSC_PREFIX + "4;" + index + ";");
+        return seq != null && seq.startsWith(OSC + "4;" + index + ";");
     }
 
     // ── Parse ─────────────────────────────────────────────────────────────
@@ -543,7 +543,7 @@ public final class TermColors {
      * does not start with {@code ESC ]}.
      */
     static String oscBody(String seq) {
-        if (seq == null || !seq.startsWith(OSC_PREFIX)) return null;
+        if (seq == null || !seq.startsWith(OSC)) return null;
         String body = seq.substring(2); // strip ESC ]
         if (body.endsWith(OSC_BEL)) return body.substring(0, body.length() - 1);
         if (body.endsWith(OSC_ST)) return body.substring(0, body.length() - 2);
