@@ -131,9 +131,19 @@ For dependency coordinates (Maven, Gradle, JBang) and module-specific usage deta
 
 ## Running examples
 
-The `examples/` folder contains several ready-to-run examples. Use the provided scripts to pick and run one interactively:
+The `examples/` folder contains several ready-to-run examples. Use JBang or the provided scripts to run them:
+
+**JBang**
+
+If you've got [JBang](https://jbang.dev) installed you can run the examples directly, eg:
+
+```bash
+jbang https://github.com/codejive/java-miniterm/blob/main/examples/FunShootingGallery.java
+```
 
 **Linux/macOS:**
+
+Use the provided bash scripts:
 
 ```bash
 # Using the legacy (Java 8+) implementation
@@ -144,6 +154,8 @@ The `examples/` folder contains several ready-to-run examples. Use the provided 
 ```
 
 **Windows:**
+
+Use the provided batch files:
 
 ```batch
 :: Using the legacy (Java 8+) implementation
