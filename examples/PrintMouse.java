@@ -18,14 +18,18 @@ public class PrintMouse {
     private static final String CURSOR_UP = CSI + "A";
     private static final String ERASE_EOL = CSI + "K";
 
+    private static final int VIEW_LINES = 6;
+
     public static void main(String[] args) {
         try (Terminal terminal = Terminal.create()) {
             terminal.enableRawMode();
             MouseTracking.enable(terminal, MouseTracking.Protocol.ANY_MOTION);
             MouseTracking.enableEncoding(terminal, MouseTracking.Encoding.SGR);
+            boolean pixelMode = false;
+            MouseEvent lastEv = null;
             try {
-                // Reserve 5 lines and print the initial (empty) view
-                printView(terminal, null);
+                // Reserve the view lines and print the initial (empty) view
+                printView(terminal, null, pixelMode);
 
                 AnsiReader reader = new AnsiReader(() -> terminal.read(-1));
                 String token;
@@ -33,13 +37,24 @@ public class PrintMouse {
                     if (token.isEmpty()) continue;
                     if (!token.startsWith("\033") && token.charAt(0) == 3) break; // Ctrl+C
                     if (MouseTracking.isMouseEvent(token)) {
-                        MouseEvent ev = MouseTracking.parse(token);
-                        // Move cursor back up 5 lines to overwrite the previous view
-                        terminal.write(CURSOR_UP.repeat(5));
-                        printView(terminal, ev);
+                        lastEv = MouseTracking.parse(token);
+                    } else if (!token.startsWith("\033") && (token.equals("t") || token.equals("T"))) {
+                        pixelMode = !pixelMode;
+                        if (pixelMode) {
+                            MouseTracking.enableEncoding(terminal, MouseTracking.Encoding.SGR_PIXELS);
+                        } else {
+                            MouseTracking.disableEncoding(terminal, MouseTracking.Encoding.SGR_PIXELS);
+                            MouseTracking.enableEncoding(terminal, MouseTracking.Encoding.SGR);
+                        }
+                    } else {
+                        continue;
                     }
+                    // Move cursor back up to overwrite the previous view
+                    terminal.write(CURSOR_UP.repeat(VIEW_LINES));
+                    printView(terminal, lastEv, pixelMode);
                 }
             } finally {
+                MouseTracking.disableEncoding(terminal, MouseTracking.Encoding.SGR_PIXELS);
                 MouseTracking.disableEncoding(terminal, MouseTracking.Encoding.SGR);
                 MouseTracking.disable(terminal, MouseTracking.Protocol.ANY_MOTION);
             }
@@ -48,16 +63,18 @@ public class PrintMouse {
         }
     }
 
-    private static void printView(Terminal terminal, MouseEvent ev) throws IOException {
+    private static void printView(Terminal terminal, MouseEvent ev, boolean pixelMode) throws IOException {
         String type     = ev == null ? "-" : ev.type().name();
         String button   = ev == null ? "-" : ev.button().name();
         String position = ev == null ? "-" : ev.x() + ", " + ev.y();
         String mods     = ev == null ? "-" : modifiers(ev);
+        String unit     = pixelMode ? "PIXEL" : "CELL";
 
         writeLine(terminal, "Type:      " + type);
         writeLine(terminal, "Button:    " + button);
         writeLine(terminal, "Position:  " + position);
         writeLine(terminal, "Modifiers: " + mods);
+        writeLine(terminal, "Coordinates: " + unit + " (press T to toggle cell/pixel coordinates)");
         writeLine(terminal, "(move the mouse, click or scroll — Ctrl+C to exit)");
     }
 
