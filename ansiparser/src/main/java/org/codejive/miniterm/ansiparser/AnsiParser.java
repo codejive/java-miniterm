@@ -14,6 +14,7 @@ import java.io.IOException;
  *
  * <ul>
  *   <li><b>CSI</b> ({@code ESC [}) – parameter/intermediate bytes followed by a final byte
+ *   <li><b>Legacy X10 mouse events</b> ({@code ESC [ M}) – followed by exactly 3 data bytes
  *   <li><b>OSC/DCS/PM/APC/SOS</b> ({@code ESC ] P X ^ _}) – string commands terminated by {@code
  *       BEL} (0x07) or {@code ST} ({@code ESC \})
  *   <li><b>Charset designators</b> ({@code ESC ( ) * + - . /}) – one additional character
@@ -35,6 +36,10 @@ public final class AnsiParser {
     private static final int S_STRING_CMD = 3;
     private static final int S_ESC_IN_STR = 4;
     private static final int S_CHARSET = 5;
+    private static final int S_X10_MOUSE_EVENT = 6;
+
+    /** Number of characters following the {@code M} in a legacy X10 mouse event (b, x, y). */
+    private static final int X10_MOUSE_DATA_LENGTH = 3;
 
     private AnsiParser() {}
 
@@ -78,6 +83,7 @@ public final class AnsiParser {
             throws IOException {
         int state = S_INIT;
         int len = 0;
+        int remaining = 0;
         while (len < maxLength) {
             int ch = source.read();
             if (ch < 0) {
@@ -108,6 +114,12 @@ public final class AnsiParser {
                     return 0; // simple two-char ESC sequence
 
                 case S_CSI:
+                    if (len == 3 && ch == 'M') {
+                        // legacy X10 mouse event: ESC [ M <b> <x> <y>
+                        state = S_X10_MOUSE_EVENT;
+                        remaining = X10_MOUSE_DATA_LENGTH;
+                        break;
+                    }
                     // final byte: 0x40–0x7E → sequence complete
                     if (ch >= 0x40 && ch <= 0x7E) return 0;
                     // valid parameter/intermediate bytes: 0x20–0x3F → keep reading
@@ -128,6 +140,11 @@ public final class AnsiParser {
 
                 case S_CHARSET:
                     return 0; // one designator char consumed
+
+                case S_X10_MOUSE_EVENT:
+                    remaining--;
+                    if (remaining <= 0) return 0; // <b> <x> <y> all consumed
+                    break;
             }
         }
 
