@@ -53,6 +53,16 @@ import org.codejive.miniterm.ansiparser.Ansi;
  *
  * <p>{@link Encoding#SGR_PIXELS} (DEC mode 1016) extends {@link Encoding#SGR} to report pixel-level
  * coordinates instead of cell-based coordinates. Enable it together with {@link Encoding#SGR}.
+ *
+ * <p>The wire format is unchanged by {@link Encoding#SGR_PIXELS} — only the meaning of the {@code
+ * Px}/{@code Py} fields changes, from 1-based character-cell column/row to pixel offsets from the
+ * terminal's top-left corner. {@link #parse(String)} decodes both the same way; callers must track
+ * which encoding is active to know how to interpret {@link MouseEvent#x()} and {@link
+ * MouseEvent#y()}.
+ *
+ * <p>Some terminals reset {@link Encoding#SGR} as a side effect of disabling {@link
+ * Encoding#SGR_PIXELS}. If you toggle {@link Encoding#SGR_PIXELS} off at runtime, re-enable {@link
+ * Encoding#SGR} right after to be safe.
  */
 public final class MouseTracking {
 

@@ -80,18 +80,28 @@ public final class MouseEvent {
     }
 
     /**
-     * Returns the 1-based column at which the event occurred.
+     * Returns the horizontal coordinate at which the event occurred.
      *
-     * @return column, &ge; 1
+     * <p>By default this is the 1-based column of the character cell. If {@link
+     * MouseTracking.Encoding#SGR_PIXELS} was enabled when the event was reported, this is instead a
+     * 0-based pixel offset from the left edge of the terminal window. This class cannot tell the
+     * two apart — callers must track which encoding is active.
+     *
+     * @return column or pixel offset, depending on the active encoding
      */
     public int x() {
         return x;
     }
 
     /**
-     * Returns the 1-based row at which the event occurred.
+     * Returns the vertical coordinate at which the event occurred.
      *
-     * @return row, &ge; 1
+     * <p>By default this is the 1-based row of the character cell. If {@link
+     * MouseTracking.Encoding#SGR_PIXELS} was enabled when the event was reported, this is instead a
+     * 0-based pixel offset from the top edge of the terminal window. This class cannot tell the two
+     * apart — callers must track which encoding is active.
+     *
+     * @return row or pixel offset, depending on the active encoding
      */
     public int y() {
         return y;

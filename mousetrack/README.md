@@ -128,6 +128,13 @@ try {
 
 Not all terminals support mode 1016; check the terminal's documentation before relying on it.
 
+Some terminals reset `SGR` as a side effect of disabling `SGR_PIXELS`. If you toggle `SGR_PIXELS` off at runtime, re-enable `SGR` right after, e.g.:
+
+```java
+MouseTracking.disableEncoding(terminal, MouseTracking.Encoding.SGR_PIXELS);
+MouseTracking.enableEncoding(terminal, MouseTracking.Encoding.SGR);
+```
+
 ## Adding the dependency
 
 ### JBang
