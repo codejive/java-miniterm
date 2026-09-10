@@ -70,6 +70,32 @@ class AnsiParserTest {
         assertThat(result).isEqualTo("\u001b[\u0007");
     }
 
+    // ── legacy X10 mouse events ────────────────────────────────────────────────
+
+    @Test
+    void x10MouseEvent() throws IOException {
+        // ESC [ M <b> <x> <y> — exactly 6 characters total
+        assertThat(AnsiParser.parse(supplyString("\u001b[M !\""))).isEqualTo("\u001b[M !\"");
+    }
+
+    @Test
+    void x10MouseEventDataBytesInFinalByteRangeAreNotSpecial() throws IOException {
+        // data bytes that look like CSI final bytes (e.g. 'M', 'A') must still be consumed as data
+        assertThat(AnsiParser.parse(supplyString("\u001b[MMAM"))).isEqualTo("\u001b[MMAM");
+    }
+
+    @Test
+    void mNotAfterCsiStartIsOrdinaryFinalByte() throws IOException {
+        // ESC [ 1 M – 'M' is not the first CSI char here, so it's a normal final byte
+        assertThat(AnsiParser.parse(supplyString("\u001b[1M"))).isEqualTo("\u001b[1M");
+    }
+
+    @Test
+    void x10MouseEventTruncatedByEof() throws IOException {
+        // ESC [ M <b> then EOF – returns what was accumulated so far
+        assertThat(AnsiParser.parse(supply(0x1B, '[', 'M', 'b', -1))).isEqualTo("\u001b[Mb");
+    }
+
     // ── OSC sequences ─────────────────────────────────────────────────────────
 
     @Test
