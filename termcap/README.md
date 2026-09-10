@@ -1,6 +1,6 @@
 # termcap
 
-`termcap` is a small (~10KB) Java 8+ terminal capability detector, part of the [java-miniterm](../README.md) project.
+`termcap` is a small (~10KB) Java 8+ terminal capability detector, part of the [miniterm](../README.md) project.
 
 It detects what the current terminal can do — colour depth, mouse support, bracketed paste, hyperlinks, and more — without requiring any terminal I/O. An optional live-probing mode refines the result by querying the terminal directly using DA1/DA2 sequences.
 

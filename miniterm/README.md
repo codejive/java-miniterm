@@ -1,6 +1,6 @@
 # miniterm
 
-`miniterm` is the legacy Java 8+ implementation of the [java-miniterm](../README.md) library — a minimal (~25KB) low-level terminal access library for Java.
+`miniterm` is the legacy Java 8+ implementation of the [miniterm](../README.md) library — a minimal (~25KB) low-level terminal access library for Java.
 
 ## Usage
 

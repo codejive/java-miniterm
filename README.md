@@ -1,4 +1,4 @@
-# java-miniterm
+# miniterm
 
 `miniterm` is a Java library that provides low-level terminal access. Its main selling point is that it is extremely small (**~25KB**), making it ideal for CLI tools and applications where keeping dependencies lightweight matters.
 

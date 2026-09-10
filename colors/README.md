@@ -1,6 +1,6 @@
 # colors
 
-`colors` is a small Java 8+ library for querying and setting terminal colour palettes via OSC escape sequences, part of the [java-miniterm](../README.md) project.
+`colors` is a small Java 8+ library for querying and setting terminal colour palettes via OSC escape sequences, part of the [miniterm](../README.md) project.
 
 It supports reading the full 256-entry palette in a single burst, querying the foreground/background/cursor colours, redefining palette entries, and resetting them to the profile defaults.
 

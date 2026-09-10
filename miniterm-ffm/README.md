@@ -1,6 +1,6 @@
 # miniterm-ffm
 
-`miniterm-ffm` is the modern Java 22+ implementation of the [java-miniterm](../README.md) library — a minimal (~25KB) low-level terminal access library for Java, using the Foreign Function & Memory (FFM) API for native calls.
+`miniterm-ffm` is the modern Java 22+ implementation of the [miniterm](../README.md) library — a minimal (~25KB) low-level terminal access library for Java, using the Foreign Function & Memory (FFM) API for native calls.
 
 > **Requires Java 22+.** For a Java 8+ compatible implementation see [`miniterm`](../miniterm/README.md).
 

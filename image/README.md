@@ -1,6 +1,6 @@
 # image
 
-`image` is a Java 8+ terminal image rendering utility, part of the [java-miniterm](../README.md) project.
+`image` is a Java 8+ terminal image rendering utility, part of the [miniterm](../README.md) project.
 
 It can render `BufferedImage` objects to terminal graphics protocols such as Kitty, iTerm2, and Sixel, with a Unicode block fallback for terminals that do not support a native graphics protocol. The module automatically detects the best protocol for the current terminal and exposes a small, configurable encoder API.
 

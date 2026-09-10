@@ -1,6 +1,6 @@
 # mousetrack
 
-`mousetrack` is a small (~5KB) Java 8+ terminal mouse-tracking utility, part of the [java-miniterm](../README.md) project.
+`mousetrack` is a small (~5KB) Java 8+ terminal mouse-tracking utility, part of the [miniterm](../README.md) project.
 
 It provides static helpers for enabling and disabling terminal mouse-event reporting protocols by writing the appropriate ANSI DEC private-mode sequences to any `Appendable`, and for detecting and parsing the escape sequences that the terminal sends back into structured `MouseEvent` objects.
 

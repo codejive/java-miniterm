@@ -1,6 +1,6 @@
 # ansiparser
 
-`ansiparser` is a compact (~5KB) Java 8+ ANSI escape sequence parser, part of the [java-miniterm](../README.md) project.
+`ansiparser` is a compact (~5KB) Java 8+ ANSI escape sequence parser, part of the [miniterm](../README.md) project.
 
 It provides a finite-state-machine parser that correctly handles all common ANSI/VT escape sequences — CSI sequences, OSC/DCS string commands, charset designators, and plain two-character sequences — with built-in DoS protection against runaway sequences.
 

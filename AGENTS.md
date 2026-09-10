@@ -2,7 +2,7 @@
 
 ## Repository overview
 
-This is a multi-module Maven repository for `java-miniterm`, a small terminal-oriented Java library family.
+This is a multi-module Maven repository for `miniterm`, a small terminal-oriented Java library family.
 
 ### Shared conventions
 
