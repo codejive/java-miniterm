@@ -42,7 +42,7 @@ while (true) {
 ### JBang
 
 ```java
-//DEPS org.codejive.miniterm:miniterm:0.1.6
+//DEPS org.codejive.miniterm:miniterm:0.1.7
 ```
 
 ### Maven
@@ -51,14 +51,14 @@ while (true) {
 <dependency>
     <groupId>org.codejive.miniterm</groupId>
     <artifactId>miniterm</artifactId>
-    <version>0.1.6</version>
+    <version>0.1.7</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```kotlin
-implementation("org.codejive.miniterm:miniterm:0.1.6")
+implementation("org.codejive.miniterm:miniterm:0.1.7")
 ```
 
 ## Building
