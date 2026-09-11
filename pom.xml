@@ -62,7 +62,7 @@
         <version.maven-enforcer>3.6.3</version.maven-enforcer>
         <version.maven-source>3.4.0</version.maven-source>
         <version.maven-javadoc>3.12.0</version.maven-javadoc>
-        <version.build-helper>3.6.1</version.build-helper>
+        <version.build-helper>3.6.2</version.build-helper>
         <version.jreleaser>1.26.0</version.jreleaser>
     </properties>
 
