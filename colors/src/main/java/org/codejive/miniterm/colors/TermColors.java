@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.function.Function;
 import org.codejive.miniterm.ansiparser.AnsiParser;
 import org.codejive.miniterm.ansiparser.IntReader;
+import org.codejive.miniterm.colors.Color.RgbColor;
 
 /**
  * Static helpers for querying and setting terminal colours via OSC escape sequences.
@@ -19,7 +20,7 @@ import org.codejive.miniterm.ansiparser.IntReader;
  *
  * <pre>{@code
  * terminal.enableRawMode();
- * Color bg = TermColors.queryBackground(terminal, () -> terminal.read(500));
+ * RgbColor bg = TermColors.queryBackground(terminal, () -> terminal.read(500));
  * }</pre>
  *
  * <p>Set and reset methods perform only output and can be called at any time.
@@ -47,8 +48,8 @@ import org.codejive.miniterm.ansiparser.IntReader;
  *
  * <ul>
  *   <li>{@link #setForeground} / {@link #setBackground} / {@link #setCursor} — OSC 10/11/12
- *   <li>{@link #setColor(Appendable, int, Color)} — single palette entry (OSC 4)
- *   <li>{@link #setPalette(Appendable, Color[])} — all 256 palette entries
+ *   <li>{@link #setColor(Appendable, int, RgbColor)} — single palette entry (OSC 4)
+ *   <li>{@link #setPalette(Appendable, RgbColor[])} — all 256 palette entries
  * </ul>
  *
  * <h2>Reset methods</h2>
@@ -65,14 +66,14 @@ import org.codejive.miniterm.ansiparser.IntReader;
  * <h2>Utility methods</h2>
  *
  * <ul>
- *   <li>{@link #nearest(Color, Color[])} — index of the closest matching colour in a palette
+ *   <li>{@link #nearest(RgbColor, RgbColor[])} — index of the closest matching colour in a palette
  * </ul>
  *
  * <h2>Burst palette query</h2>
  *
  * <p>{@link #queryPalette} sends all requested queries at once, then collects responses until a
  * read timeout indicates the terminal has no more data to send. Results are returned as a {@code
- * Color[256]} array indexed by palette entry number; entries for which no response arrived are
+ * RgbColor[256]} array indexed by palette entry number; entries for which no response arrived are
  * {@code null}.
  *
  * <h2>SSH sessions</h2>
@@ -159,7 +160,7 @@ public final class TermColors {
      * @return the current foreground colour, or {@code null} if the terminal did not respond
      * @throws IOException if writing fails
      */
-    public static Color queryForeground(Appendable out, IntReader in) throws IOException {
+    public static RgbColor queryForeground(Appendable out, IntReader in) throws IOException {
         sendForegroundQuery(out);
         return readSingleColor(in, TermColors::parseForeground);
     }
@@ -172,7 +173,7 @@ public final class TermColors {
      * @return the current background colour, or {@code null} if the terminal did not respond
      * @throws IOException if writing fails
      */
-    public static Color queryBackground(Appendable out, IntReader in) throws IOException {
+    public static RgbColor queryBackground(Appendable out, IntReader in) throws IOException {
         sendBackgroundQuery(out);
         return readSingleColor(in, TermColors::parseBackground);
     }
@@ -185,7 +186,7 @@ public final class TermColors {
      * @return the current cursor colour, or {@code null} if the terminal did not respond
      * @throws IOException if writing fails
      */
-    public static Color queryCursor(Appendable out, IntReader in) throws IOException {
+    public static RgbColor queryCursor(Appendable out, IntReader in) throws IOException {
         sendCursorQuery(out);
         return readSingleColor(in, TermColors::parseCursor);
     }
@@ -200,7 +201,7 @@ public final class TermColors {
      * @throws IllegalArgumentException if {@code index} is out of range
      * @throws IOException if writing fails
      */
-    public static Color queryColor(Appendable out, IntReader in, int index) throws IOException {
+    public static RgbColor queryColor(Appendable out, IntReader in, int index) throws IOException {
         sendColorQuery(out, index);
         return readPaletteColor(in, index);
     }
@@ -218,7 +219,7 @@ public final class TermColors {
      *     respond for that index
      * @throws IOException if writing fails
      */
-    public static Color[] queryPalette(Appendable out, IntReader in) throws IOException {
+    public static RgbColor[] queryPalette(Appendable out, IntReader in) throws IOException {
         int[] all = new int[256];
         for (int i = 0; i < 256; i++) all[i] = i;
         return queryPalette(out, in, all);
@@ -238,7 +239,7 @@ public final class TermColors {
      * @throws IllegalArgumentException if any index is out of range
      * @throws IOException if writing fails
      */
-    public static Color[] queryPalette(Appendable out, IntReader in, int[] indices)
+    public static RgbColor[] queryPalette(Appendable out, IntReader in, int[] indices)
             throws IOException {
         boolean[] requested = new boolean[256];
         int requestedCount = 0;
@@ -256,7 +257,7 @@ public final class TermColors {
         }
 
         // Collect responses until timeout
-        Color[] result = new Color[256];
+        RgbColor[] result = new RgbColor[256];
         int received = 0;
         int maxAttempts = requestedCount * 2 + 32;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
@@ -281,7 +282,7 @@ public final class TermColors {
             }
             if (colorIndex < 0 || colorIndex > 255) continue;
 
-            Color color = parseColor(seq, colorIndex);
+            RgbColor color = parseColor(seq, colorIndex);
             if (color != null && result[colorIndex] == null && requested[colorIndex]) {
                 result[colorIndex] = color;
                 received++;
@@ -300,8 +301,8 @@ public final class TermColors {
      * @param color new foreground colour
      * @throws IOException if writing fails
      */
-    public static void setForeground(Appendable out, Color color) throws IOException {
-        out.append(OSC).append("10;").append(color.toString()).append(OSC_BEL);
+    public static void setForeground(Appendable out, RgbColor color) throws IOException {
+        out.append(OSC).append("10;").append(color.toOscCode()).append(OSC_BEL);
     }
 
     /**
@@ -311,8 +312,8 @@ public final class TermColors {
      * @param color new background colour
      * @throws IOException if writing fails
      */
-    public static void setBackground(Appendable out, Color color) throws IOException {
-        out.append(OSC).append("11;").append(color.toString()).append(OSC_BEL);
+    public static void setBackground(Appendable out, RgbColor color) throws IOException {
+        out.append(OSC).append("11;").append(color.toOscCode()).append(OSC_BEL);
     }
 
     /**
@@ -322,8 +323,8 @@ public final class TermColors {
      * @param color new cursor colour
      * @throws IOException if writing fails
      */
-    public static void setCursor(Appendable out, Color color) throws IOException {
-        out.append(OSC).append("12;").append(color.toString()).append(OSC_BEL);
+    public static void setCursor(Appendable out, RgbColor color) throws IOException {
+        out.append(OSC).append("12;").append(color.toOscCode()).append(OSC_BEL);
     }
 
     /**
@@ -335,13 +336,13 @@ public final class TermColors {
      * @throws IllegalArgumentException if {@code index} is out of range
      * @throws IOException if writing fails
      */
-    public static void setColor(Appendable out, int index, Color color) throws IOException {
+    public static void setColor(Appendable out, int index, RgbColor color) throws IOException {
         validateIndex(index);
         out.append(OSC)
                 .append("4;")
                 .append(String.valueOf(index))
                 .append(";")
-                .append(color.toString())
+                .append(color.toOscCode())
                 .append(OSC_BEL);
     }
 
@@ -355,7 +356,7 @@ public final class TermColors {
      * @throws IllegalArgumentException if {@code colors} does not have exactly 256 elements
      * @throws IOException if writing fails
      */
-    public static void setPalette(Appendable out, Color[] colors) throws IOException {
+    public static void setPalette(Appendable out, RgbColor[] colors) throws IOException {
         if (colors.length != 256) {
             throw new IllegalArgumentException(
                     "palette array must have exactly 256 entries, got " + colors.length);
@@ -434,11 +435,11 @@ public final class TermColors {
      * @return index of the nearest non-{@code null} entry in {@code palette}, or {@code -1} if
      *     {@code palette} is empty or contains only {@code null} entries
      */
-    public static int nearest(Color target, Color[] palette) {
+    public static int nearest(RgbColor target, RgbColor[] palette) {
         int bestIndex = -1;
         long bestDistance = Long.MAX_VALUE;
         for (int i = 0; i < palette.length; i++) {
-            Color c = palette[i];
+            RgbColor c = palette[i];
             if (c == null) continue;
             long distance = distance(target, c);
             if (distance < bestDistance) {
@@ -454,7 +455,7 @@ public final class TermColors {
      * downsampled components. Cheaper than a full CIE Lab conversion while still weighting channels
      * closer to human colour perception than plain Euclidean RGB distance.
      */
-    private static long distance(Color a, Color b) {
+    private static long distance(RgbColor a, RgbColor b) {
         long meanR = (a.r8() + b.r8()) / 2;
         long dr = a.r8() - b.r8();
         long dg = a.g8() - b.g8();
@@ -518,9 +519,9 @@ public final class TermColors {
      * @param seq raw escape sequence
      * @return the parsed colour, or {@code null} if {@code seq} is not a valid OSC 10 response
      */
-    public static Color parseForeground(String seq) {
+    public static RgbColor parseForeground(String seq) {
         if (!isForegroundQueryResult(seq)) return null;
-        return Color.parse(oscBody(seq).substring(3));
+        return RgbColor.parse(oscBody(seq).substring(3));
     }
 
     /**
@@ -529,9 +530,9 @@ public final class TermColors {
      * @param seq raw escape sequence
      * @return the parsed colour, or {@code null} if {@code seq} is not a valid OSC 11 response
      */
-    public static Color parseBackground(String seq) {
+    public static RgbColor parseBackground(String seq) {
         if (!isBackgroundQueryResult(seq)) return null;
-        return Color.parse(oscBody(seq).substring(3));
+        return RgbColor.parse(oscBody(seq).substring(3));
     }
 
     /**
@@ -540,9 +541,9 @@ public final class TermColors {
      * @param seq raw escape sequence
      * @return the parsed colour, or {@code null} if {@code seq} is not a valid OSC 12 response
      */
-    public static Color parseCursor(String seq) {
+    public static RgbColor parseCursor(String seq) {
         if (!isCursorQueryResult(seq)) return null;
-        return Color.parse(oscBody(seq).substring(3));
+        return RgbColor.parse(oscBody(seq).substring(3));
     }
 
     /**
@@ -553,33 +554,33 @@ public final class TermColors {
      * @return the parsed colour, or {@code null} if {@code seq} is not a valid OSC 4 response for
      *     {@code expectedIndex}
      */
-    public static Color parseColor(String seq, int expectedIndex) {
+    public static RgbColor parseColor(String seq, int expectedIndex) {
         if (!isColorQueryResult(seq, expectedIndex)) return null;
         String prefix = "4;" + expectedIndex + ";";
-        return Color.parse(oscBody(seq).substring(prefix.length()));
+        return RgbColor.parse(oscBody(seq).substring(prefix.length()));
     }
 
     // ── Internal helpers ──────────────────────────────────────────────────
 
     /**
-     * Reads ANSI sequences from {@code in} until {@code parser} returns a non-null {@link Color},
-     * or until a timeout or EOF occurs.
+     * Reads ANSI sequences from {@code in} until {@code parser} returns a non-null {@link
+     * RgbColor}, or until a timeout or EOF occurs.
      */
-    private static Color readSingleColor(IntReader in, Function<String, Color> parser)
+    private static RgbColor readSingleColor(IntReader in, Function<String, RgbColor> parser)
             throws IOException {
         for (int attempt = 0; attempt < 32; attempt++) {
             StringBuilder sb = new StringBuilder();
             AnsiParser.parse(sb, in, AnsiParser.MAX_SEQUENCE_LENGTH);
             String seq = sb.toString();
             if (seq.isEmpty()) return null; // timeout
-            Color c = parser.apply(seq);
+            RgbColor c = parser.apply(seq);
             if (c != null) return c;
         }
         return null;
     }
 
     /** Like {@link #readSingleColor} but matches an OSC 4 response for a specific palette index. */
-    private static Color readPaletteColor(IntReader in, int expectedIndex) throws IOException {
+    private static RgbColor readPaletteColor(IntReader in, int expectedIndex) throws IOException {
         return readSingleColor(in, seq -> parseColor(seq, expectedIndex));
     }
 

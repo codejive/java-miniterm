@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import org.codejive.miniterm.ansiparser.IntReader;
+import org.codejive.miniterm.colors.Color.RgbColor;
 import org.junit.jupiter.api.Test;
 
 class TermColorsTest {
@@ -120,7 +121,7 @@ class TermColorsTest {
     @Test
     void parseForeground_validSequence() {
         String seq = "\033]10;rgb:FFFF/0000/0000\007";
-        assertThat(TermColors.parseForeground(seq)).isEqualTo(Color.of(0xFFFF, 0x0000, 0x0000));
+        assertThat(TermColors.parseForeground(seq)).isEqualTo(Color.rgb(0xFFFF, 0x0000, 0x0000));
     }
 
     @Test
@@ -132,7 +133,7 @@ class TermColorsTest {
     @Test
     void parseBackground_validSequence() {
         String seq = "\033]11;rgb:1234/5678/9ABC\007";
-        assertThat(TermColors.parseBackground(seq)).isEqualTo(Color.of(0x1234, 0x5678, 0x9ABC));
+        assertThat(TermColors.parseBackground(seq)).isEqualTo(Color.rgb(0x1234, 0x5678, 0x9ABC));
     }
 
     @Test
@@ -143,19 +144,19 @@ class TermColorsTest {
     @Test
     void parseCursor_validSequence() {
         String seq = "\033]12;rgb:0000/FFFF/0000\007";
-        assertThat(TermColors.parseCursor(seq)).isEqualTo(Color.of(0x0000, 0xFFFF, 0x0000));
+        assertThat(TermColors.parseCursor(seq)).isEqualTo(Color.rgb(0x0000, 0xFFFF, 0x0000));
     }
 
     @Test
     void parseCursor_stTerminated() {
         String seq = "\033]12;rgb:0000/FFFF/0000\033\\";
-        assertThat(TermColors.parseCursor(seq)).isEqualTo(Color.of(0x0000, 0xFFFF, 0x0000));
+        assertThat(TermColors.parseCursor(seq)).isEqualTo(Color.rgb(0x0000, 0xFFFF, 0x0000));
     }
 
     @Test
     void parseColor_validSequence() {
         String seq = "\033]4;7;rgb:AAAA/BBBB/CCCC\007";
-        assertThat(TermColors.parseColor(seq, 7)).isEqualTo(Color.of(0xAAAA, 0xBBBB, 0xCCCC));
+        assertThat(TermColors.parseColor(seq, 7)).isEqualTo(Color.rgb(0xAAAA, 0xBBBB, 0xCCCC));
     }
 
     @Test
@@ -174,44 +175,44 @@ class TermColorsTest {
     @Test
     void setForeground_writesCorrectSequence() throws IOException {
         StringBuilder out = new StringBuilder();
-        TermColors.setForeground(out, Color.of(0xFFFF, 0x0000, 0x0000));
+        TermColors.setForeground(out, Color.rgb(0xFFFF, 0x0000, 0x0000));
         assertThat(out.toString()).isEqualTo("\033]10;rgb:FFFF/0000/0000\007");
     }
 
     @Test
     void setBackground_writesCorrectSequence() throws IOException {
         StringBuilder out = new StringBuilder();
-        TermColors.setBackground(out, Color.of(0x0000, 0x0000, 0x0000));
+        TermColors.setBackground(out, Color.rgb(0x0000, 0x0000, 0x0000));
         assertThat(out.toString()).isEqualTo("\033]11;rgb:0000/0000/0000\007");
     }
 
     @Test
     void setCursor_writesCorrectSequence() throws IOException {
         StringBuilder out = new StringBuilder();
-        TermColors.setCursor(out, Color.of(0xFFFF, 0xFFFF, 0x0000));
+        TermColors.setCursor(out, Color.rgb(0xFFFF, 0xFFFF, 0x0000));
         assertThat(out.toString()).isEqualTo("\033]12;rgb:FFFF/FFFF/0000\007");
     }
 
     @Test
     void setColor_writesCorrectSequence() throws IOException {
         StringBuilder out = new StringBuilder();
-        TermColors.setColor(out, 7, Color.of(0xAAAA, 0xBBBB, 0xCCCC));
+        TermColors.setColor(out, 7, Color.rgb(0xAAAA, 0xBBBB, 0xCCCC));
         assertThat(out.toString()).isEqualTo("\033]4;7;rgb:AAAA/BBBB/CCCC\007");
     }
 
     @Test
     void setColor_rejectsOutOfRange() {
-        assertThatThrownBy(() -> TermColors.setColor(new StringBuilder(), -1, Color.of(0, 0, 0)))
+        assertThatThrownBy(() -> TermColors.setColor(new StringBuilder(), -1, Color.rgb(0, 0, 0)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> TermColors.setColor(new StringBuilder(), 256, Color.of(0, 0, 0)))
+        assertThatThrownBy(() -> TermColors.setColor(new StringBuilder(), 256, Color.rgb(0, 0, 0)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void setPalette_writesAllNonNullEntries() throws IOException {
-        Color[] palette = new Color[256];
-        palette[0] = Color.of(0x0000, 0x0000, 0x0000);
-        palette[255] = Color.of(0xFFFF, 0xFFFF, 0xFFFF);
+        RgbColor[] palette = new RgbColor[256];
+        palette[0] = Color.rgb(0x0000, 0x0000, 0x0000);
+        palette[255] = Color.rgb(0xFFFF, 0xFFFF, 0xFFFF);
 
         StringBuilder out = new StringBuilder();
         TermColors.setPalette(out, palette);
@@ -225,7 +226,7 @@ class TermColorsTest {
 
     @Test
     void setPalette_rejectsWrongLength() {
-        assertThatThrownBy(() -> TermColors.setPalette(new StringBuilder(), new Color[100]))
+        assertThatThrownBy(() -> TermColors.setPalette(new StringBuilder(), new RgbColor[100]))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -270,35 +271,35 @@ class TermColorsTest {
 
     @Test
     void nearest_findsExactMatch() {
-        Color[] palette = {
-            Color.ofRgb8(0, 0, 0), Color.ofRgb8(255, 0, 0), Color.ofRgb8(0, 255, 0),
+        RgbColor[] palette = {
+            Color.rgb8(0, 0, 0), Color.rgb8(255, 0, 0), Color.rgb8(0, 255, 0),
         };
-        assertThat(TermColors.nearest(Color.ofRgb8(255, 0, 0), palette)).isEqualTo(1);
+        assertThat(TermColors.nearest(Color.rgb8(255, 0, 0), palette)).isEqualTo(1);
     }
 
     @Test
     void nearest_findsClosestMatch() {
-        Color[] palette = {
-            Color.ofRgb8(0, 0, 0), Color.ofRgb8(200, 0, 0), Color.ofRgb8(255, 255, 255),
+        Color.RgbColor[] palette = {
+            Color.rgb8(0, 0, 0), Color.rgb8(200, 0, 0), Color.rgb8(255, 255, 255),
         };
-        assertThat(TermColors.nearest(Color.ofRgb8(210, 10, 10), palette)).isEqualTo(1);
+        assertThat(TermColors.nearest(Color.rgb8(210, 10, 10), palette)).isEqualTo(1);
     }
 
     @Test
     void nearest_skipsNullEntries() {
-        Color[] palette = {Color.ofRgb8(255, 0, 0), null, Color.ofRgb8(0, 0, 0)};
-        assertThat(TermColors.nearest(Color.ofRgb8(10, 10, 10), palette)).isEqualTo(2);
+        Color.RgbColor[] palette = {Color.rgb8(255, 0, 0), null, Color.rgb8(0, 0, 0)};
+        assertThat(TermColors.nearest(Color.rgb8(10, 10, 10), palette)).isEqualTo(2);
     }
 
     @Test
     void nearest_emptyPalette_returnsMinusOne() {
-        assertThat(TermColors.nearest(Color.ofRgb8(0, 0, 0), new Color[0])).isEqualTo(-1);
+        assertThat(TermColors.nearest(Color.rgb8(0, 0, 0), new Color.RgbColor[0])).isEqualTo(-1);
     }
 
     @Test
     void nearest_allNullPalette_returnsMinusOne() {
-        Color[] palette = {null, null, null};
-        assertThat(TermColors.nearest(Color.ofRgb8(0, 0, 0), palette)).isEqualTo(-1);
+        Color.RgbColor[] palette = {null, null, null};
+        assertThat(TermColors.nearest(Color.rgb8(0, 0, 0), palette)).isEqualTo(-1);
     }
 
     // ── Query methods ─────────────────────────────────────────────────────
@@ -311,21 +312,21 @@ class TermColorsTest {
         Color result = TermColors.queryForeground(out, stringReader(response));
 
         assertThat(out.toString()).isEqualTo("\033]10;?\007");
-        assertThat(result).isEqualTo(Color.of(0xFFFF, 0x0000, 0x0000));
+        assertThat(result).isEqualTo(Color.rgb(0xFFFF, 0x0000, 0x0000));
     }
 
     @Test
     void queryBackground_parsesResponse() throws IOException {
         String response = "\033]11;rgb:1234/5678/9ABC\007";
         Color result = TermColors.queryBackground(new StringBuilder(), stringReader(response));
-        assertThat(result).isEqualTo(Color.of(0x1234, 0x5678, 0x9ABC));
+        assertThat(result).isEqualTo(Color.rgb(0x1234, 0x5678, 0x9ABC));
     }
 
     @Test
     void queryCursor_parsesResponse() throws IOException {
         String response = "\033]12;rgb:0000/FFFF/0000\007";
         Color result = TermColors.queryCursor(new StringBuilder(), stringReader(response));
-        assertThat(result).isEqualTo(Color.of(0x0000, 0xFFFF, 0x0000));
+        assertThat(result).isEqualTo(Color.rgb(0x0000, 0xFFFF, 0x0000));
     }
 
     @Test
@@ -343,7 +344,7 @@ class TermColorsTest {
         Color result = TermColors.queryColor(out, stringReader(response), 7);
 
         assertThat(out.toString()).isEqualTo("\033]4;7;?\007");
-        assertThat(result).isEqualTo(Color.of(0xAAAA, 0xBBBB, 0xCCCC));
+        assertThat(result).isEqualTo(Color.rgb(0xAAAA, 0xBBBB, 0xCCCC));
     }
 
     @Test
@@ -351,7 +352,7 @@ class TermColorsTest {
         // First response has wrong index, second has the right one
         String responses = "\033]4;99;rgb:0000/0000/0000\007" + "\033]4;7;rgb:AAAA/BBBB/CCCC\007";
         Color result = TermColors.queryColor(new StringBuilder(), stringReader(responses), 7);
-        assertThat(result).isEqualTo(Color.of(0xAAAA, 0xBBBB, 0xCCCC));
+        assertThat(result).isEqualTo(Color.rgb(0xAAAA, 0xBBBB, 0xCCCC));
     }
 
     @Test
@@ -367,8 +368,8 @@ class TermColorsTest {
         // Verify queries were sent
         assertThat(out.toString()).contains("\033]4;0;?\007").contains("\033]4;3;?\007");
 
-        assertThat(result[0]).isEqualTo(Color.of(0x0000, 0x0000, 0x0000));
-        assertThat(result[3]).isEqualTo(Color.of(0xFFFF, 0x0000, 0x0000));
+        assertThat(result[0]).isEqualTo(Color.rgb(0x0000, 0x0000, 0x0000));
+        assertThat(result[3]).isEqualTo(Color.rgb(0xFFFF, 0x0000, 0x0000));
         // Unrequested entries stay null
         assertThat(result[1]).isNull();
         assertThat(result[2]).isNull();
@@ -380,7 +381,7 @@ class TermColorsTest {
         String response = "\033]4;1;rgb:1234/5678/ABCD\033\\";
         Color[] result =
                 TermColors.queryPalette(new StringBuilder(), stringReader(response), new int[] {1});
-        assertThat(result[1]).isEqualTo(Color.of(0x1234, 0x5678, 0xABCD));
+        assertThat(result[1]).isEqualTo(Color.rgb(0x1234, 0x5678, 0xABCD));
     }
 
     @Test
@@ -389,7 +390,7 @@ class TermColorsTest {
         String resp = "\033]4;5;rgb:ABCD/EF01/2345\007";
         Color[] result =
                 TermColors.queryPalette(new StringBuilder(), stringReader(resp), new int[] {5, 10});
-        assertThat(result[5]).isEqualTo(Color.of(0xABCD, 0xEF01, 0x2345));
+        assertThat(result[5]).isEqualTo(Color.rgb(0xABCD, 0xEF01, 0x2345));
         assertThat(result[10]).isNull(); // timed out before receiving
     }
 
