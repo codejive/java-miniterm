@@ -62,6 +62,12 @@ import org.codejive.miniterm.ansiparser.IntReader;
  *   <li>{@link #resetPalette(Appendable)} — all 256 palette entries (OSC 104 with no index)
  * </ul>
  *
+ * <h2>Utility methods</h2>
+ *
+ * <ul>
+ *   <li>{@link #nearest(Color, Color[])} — index of the closest matching colour in a palette
+ * </ul>
+ *
  * <h2>Burst palette query</h2>
  *
  * <p>{@link #queryPalette} sends all requested queries at once, then collects responses until a
@@ -414,6 +420,46 @@ public final class TermColors {
      */
     public static void resetPalette(Appendable out) throws IOException {
         out.append(OSC).append("104").append(OSC_BEL);
+    }
+
+    // ── Utility ───────────────────────────────────────────────────────────
+
+    /**
+     * Finds the index of the palette entry closest to {@code target}, using a low-cost weighted RGB
+     * distance (the "redmean" approximation) that favours perceptual accuracy over exact
+     * colourimetry.
+     *
+     * @param target colour to match
+     * @param palette candidate colours; {@code null} entries are skipped
+     * @return index of the nearest non-{@code null} entry in {@code palette}, or {@code -1} if
+     *     {@code palette} is empty or contains only {@code null} entries
+     */
+    public static int nearest(Color target, Color[] palette) {
+        int bestIndex = -1;
+        long bestDistance = Long.MAX_VALUE;
+        for (int i = 0; i < palette.length; i++) {
+            Color c = palette[i];
+            if (c == null) continue;
+            long distance = distance(target, c);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestIndex = i;
+            }
+        }
+        return bestIndex;
+    }
+
+    /**
+     * Computes the "redmean" weighted RGB distance squared between two colours, using their 8-bit
+     * downsampled components. Cheaper than a full CIE Lab conversion while still weighting channels
+     * closer to human colour perception than plain Euclidean RGB distance.
+     */
+    private static long distance(Color a, Color b) {
+        long meanR = (a.r8() + b.r8()) / 2;
+        long dr = a.r8() - b.r8();
+        long dg = a.g8() - b.g8();
+        long db = a.b8() - b.b8();
+        return ((512 + meanR) * dr * dr) / 256 + 4 * dg * dg + ((767 - meanR) * db * db) / 256;
     }
 
     // ── Detection ─────────────────────────────────────────────────────────
