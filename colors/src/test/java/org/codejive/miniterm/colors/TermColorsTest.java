@@ -266,6 +266,41 @@ class TermColorsTest {
         assertThat(out.toString()).isEqualTo("\033]104\007");
     }
 
+    // ── Utility methods ───────────────────────────────────────────────────
+
+    @Test
+    void nearest_findsExactMatch() {
+        Color[] palette = {
+            Color.ofRgb8(0, 0, 0), Color.ofRgb8(255, 0, 0), Color.ofRgb8(0, 255, 0),
+        };
+        assertThat(TermColors.nearest(Color.ofRgb8(255, 0, 0), palette)).isEqualTo(1);
+    }
+
+    @Test
+    void nearest_findsClosestMatch() {
+        Color[] palette = {
+            Color.ofRgb8(0, 0, 0), Color.ofRgb8(200, 0, 0), Color.ofRgb8(255, 255, 255),
+        };
+        assertThat(TermColors.nearest(Color.ofRgb8(210, 10, 10), palette)).isEqualTo(1);
+    }
+
+    @Test
+    void nearest_skipsNullEntries() {
+        Color[] palette = {Color.ofRgb8(255, 0, 0), null, Color.ofRgb8(0, 0, 0)};
+        assertThat(TermColors.nearest(Color.ofRgb8(10, 10, 10), palette)).isEqualTo(2);
+    }
+
+    @Test
+    void nearest_emptyPalette_returnsMinusOne() {
+        assertThat(TermColors.nearest(Color.ofRgb8(0, 0, 0), new Color[0])).isEqualTo(-1);
+    }
+
+    @Test
+    void nearest_allNullPalette_returnsMinusOne() {
+        Color[] palette = {null, null, null};
+        assertThat(TermColors.nearest(Color.ofRgb8(0, 0, 0), palette)).isEqualTo(-1);
+    }
+
     // ── Query methods ─────────────────────────────────────────────────────
 
     @Test
