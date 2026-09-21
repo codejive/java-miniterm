@@ -48,11 +48,11 @@ Color[] result = TermColors.queryPalette(terminal, in, ansi16);
 ### Set colours
 
 ```java
-TermColors.setForeground(terminal, Color.ofRgb8(220, 220, 220));
-TermColors.setBackground(terminal, Color.ofRgb8(30, 30, 30));
-TermColors.setCursor(terminal, Color.ofRgb8(255, 165, 0));
+TermColors.setForeground(terminal, Color.rgb8(220, 220, 220));
+TermColors.setBackground(terminal, Color.rgb8(30, 30, 30));
+TermColors.setCursor(terminal, Color.rgb8(255, 165, 0));
 
-TermColors.setColor(terminal, 1, Color.ofRgb8(204, 0, 0)); // redefine ANSI red
+TermColors.setColor(terminal, 1, Color.rgb8(204, 0, 0)); // redefine ANSI red
 ```
 
 Set the full palette from an array (null entries are skipped):
@@ -99,9 +99,9 @@ IntReader in = () -> terminal.read(500); // 500 ms timeout per read
 An immutable 16-bit-per-channel RGB colour, matching the precision used in the X11 `rgb:` colour specification that terminals return in OSC responses.
 
 ```java
-Color red   = Color.of(0xFFFF, 0x0000, 0x0000);    // 16-bit channels
-Color green = Color.ofRgb8(0, 255, 0);              // 8-bit, expanded
-Color blue  = Color.parse("rgb:0000/0000/FFFF");    // from OSC string
+Color red   = Color.rgb(0xFFFF, 0x0000, 0x0000);           // 16-bit channels
+Color green = Color.rgb8(0, 255, 0);                       // 8-bit, expanded
+Color blue  = Color.RgbColor.parse("rgb:0000/0000/FFFF");  // from OSC string
 ```
 
 Conversion helpers:

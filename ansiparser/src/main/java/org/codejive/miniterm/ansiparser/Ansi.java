@@ -13,6 +13,27 @@ public class Ansi {
     public static final String DEC_SET = "h";
     public static final String DEC_RST = "l";
 
+    // ANSI style codes
+    public static final int STYLE_RESET = 0;
+    public static final int STYLE_BOLD = 1;
+    public static final int STYLE_FAINT = 2;
+    public static final int STYLE_ITALIC = 3;
+    public static final int STYLE_UNDERLINE = 4;
+    public static final int STYLE_BLINK = 5;
+    public static final int STYLE_INVERSE = 7;
+    public static final int STYLE_HIDDEN = 8;
+    public static final int STYLE_STRIKETHROUGH = 9;
+    public static final int STYLE_DOUBLE_UNDERLINE = 21;
+    public static final int STYLE_NORMAL = 22;
+    public static final int STYLE_ITALIC_OFF = 23;
+    public static final int STYLE_UNDERLINE_OFF = 24;
+    public static final int STYLE_BLINK_OFF = 25;
+    public static final int STYLE_INVERSE_OFF = 27;
+    public static final int STYLE_HIDDEN_OFF = 28;
+    public static final int STYLE_STRIKETHROUGH_OFF = 29;
+    public static final int STYLE_OVERLINE = 53;
+    public static final int STYLE_OVERLINE_OFF = 55;
+
     // Positive mode numbers are official ANSI modes
     public static final int MODE_ECHO = 12;
 
@@ -37,11 +58,11 @@ public class Ansi {
     public static final int MODE_UNICODE = -2027;
     public static final int MODE_SYSTEMTHEME = -2031;
 
-    public static String csi(String post, int... params) {
+    public static String csi(String post, Object... params) {
         return csi((String) null, post, params);
     }
 
-    public static String csi(String pre, String post, int... params) {
+    public static String csi(String pre, String post, Object... params) {
         try {
             return csi(new StringBuilder(), pre, post, params).toString();
         } catch (IOException e) {
@@ -49,12 +70,12 @@ public class Ansi {
         }
     }
 
-    public static Appendable csi(Appendable appendable, String post, int... params)
+    public static Appendable csi(Appendable appendable, String post, Object... params)
             throws IOException {
         return csi(appendable, null, post, params);
     }
 
-    public static Appendable csi(Appendable appendable, String pre, String post, int... params)
+    public static Appendable csi(Appendable appendable, String pre, String post, Object... params)
             throws IOException {
         appendable.append(CSI);
         if (pre != null) {
@@ -62,12 +83,24 @@ public class Ansi {
         }
         for (int i = 0; i < params.length; i++) {
             if (i > 0) appendable.append(";");
-            appendable.append(Integer.toString(params[i]));
+            appendable.append(params[i].toString());
         }
         if (post != null) {
             appendable.append(post);
         }
         return appendable;
+    }
+
+    public static String style(Object... params) {
+        return csi("", "m", params);
+    }
+
+    public static String resetStyle() {
+        return style(STYLE_RESET);
+    }
+
+    public static String styled(String text, Object... params) {
+        return style(params) + text + resetStyle();
     }
 
     public static String modeQuery(int mode) {
