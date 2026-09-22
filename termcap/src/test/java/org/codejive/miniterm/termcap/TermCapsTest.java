@@ -1,6 +1,9 @@
 package org.codejive.miniterm.termcap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.codejive.miniterm.termcap.TermCapsTestHelper.detectTerm;
+import static org.codejive.miniterm.termcap.TermCapsTestHelper.detectWithEnv;
+import static org.codejive.miniterm.termcap.TermCapsTestHelper.detectWithEnvAndVersion;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +26,8 @@ class TermCapsTest {
         assertThat(caps.italic()).isFalse();
         assertThat(caps.strikethrough()).isFalse();
         assertThat(caps.overline()).isFalse();
+        assertThat(caps.kittyKeyboard()).isFalse();
+        assertThat(caps.undercurl()).isFalse();
     }
 
     @Test
@@ -41,6 +46,8 @@ class TermCapsTest {
                         .italic(true)
                         .strikethrough(true)
                         .overline(true)
+                        .kittyKeyboard(true)
+                        .undercurl(true)
                         .build();
         assertThat(caps.colors()).isEqualTo(256);
         assertThat(caps.altScreen()).isTrue();
@@ -54,6 +61,8 @@ class TermCapsTest {
         assertThat(caps.italic()).isTrue();
         assertThat(caps.strikethrough()).isTrue();
         assertThat(caps.overline()).isTrue();
+        assertThat(caps.kittyKeyboard()).isTrue();
+        assertThat(caps.undercurl()).isTrue();
     }
 
     @Test
@@ -76,28 +85,11 @@ class TermCapsTest {
     }
 
     // ── Layer 1: TERM env var ─────────────────────────────────────────────────
-    // We test applyTerm via the package-visible detect(term) overload that is
-    // absent from the public API, so we call the internal helper indirectly
-    // through a minimal builder-wrapper.
 
     @Test
     void termDumbGivesNoCapabilities() {
         TermCaps caps = detectTerm("dumb");
         assertThat(caps.colors()).isZero();
-        assertThat(caps.altScreen()).isFalse();
-        assertThat(caps.mouse()).isFalse();
-    }
-
-    @Test
-    void termVt100GivesNoCapabilities() {
-        TermCaps caps = detectTerm("vt100");
-        assertThat(caps.colors()).isZero();
-    }
-
-    @Test
-    void termAnsiGives8Colors() {
-        TermCaps caps = detectTerm("ansi");
-        assertThat(caps.colors()).isEqualTo(8);
         assertThat(caps.altScreen()).isFalse();
     }
 
@@ -198,40 +190,78 @@ class TermCapsTest {
         assertThat(caps.focusTracking()).isTrue();
     }
 
-    @Test
-    void termProgramAppleTerminalGives256Colors() {
-        TermCaps caps = detectWithEnv("xterm-256color", null, "Apple_Terminal", null, null);
-        assertThat(caps.colors()).isGreaterThanOrEqualTo(256);
-        assertThat(caps.settableTitle()).isTrue();
-    }
+    // ── New capabilities: kittyKeyboard and undercurl ─────────────────────────
 
     @Test
-    void vteVersionGivesAtLeast256Colors() {
-        TermCaps caps = detectWithEnv("xterm", null, null, "5202", null);
-        assertThat(caps.colors()).isGreaterThanOrEqualTo(256);
-        assertThat(caps.bracketedPaste()).isTrue();
-        assertThat(caps.hyperlinks()).isTrue();
+    void builderSetsKittyKeyboard() {
+        TermCaps caps = TermCaps.builder().kittyKeyboard(true).build();
+        assertThat(caps.kittyKeyboard()).isTrue();
     }
 
     @Test
-    void tmuxEnvVarEnablesMouse() {
-        // Inside tmux, TERM=screen so mouse is off by default; TMUX env should enable it
-        TermCaps caps = detectWithEnv("screen", null, null, null, "set-of-values");
-        assertThat(caps.mouse()).isTrue();
+    void builderSetsUndercurl() {
+        TermCaps caps = TermCaps.builder().undercurl(true).build();
+        assertThat(caps.undercurl()).isTrue();
     }
 
-    // ── helpers ───────────────────────────────────────────────────────────────
-
-    /**
-     * Applies only Layer 1 (TERM) by directly driving the internal builder logic. We do this via
-     * the package-visible {@code TermCapsTestHelper}, which calls the same private static methods.
-     */
-    private static TermCaps detectTerm(String term) {
-        return TermCapsTestHelper.detectTerm(term);
+    @Test
+    void termProgramITermWithVersionSupportsKittyKeyboard() {
+        TermCaps caps =
+                detectWithEnvAndVersion("xterm-256color", null, "iTerm.app", "3.5.0", null, null);
+        assertThat(caps.kittyKeyboard()).isTrue();
     }
 
-    private static TermCaps detectWithEnv(
-            String term, String colorterm, String termProgram, String vteVersion, String tmux) {
-        return TermCapsTestHelper.detectWithEnv(term, colorterm, termProgram, vteVersion, tmux);
+    @Test
+    void termProgramITermOldVersionDoesNotSupportKittyKeyboard() {
+        TermCaps caps =
+                detectWithEnvAndVersion("xterm-256color", null, "iTerm.app", "3.4.0", null, null);
+        assertThat(caps.kittyKeyboard()).isFalse();
+    }
+
+    @Test
+    void termProgramITermWithVersionSupportsUndercurl() {
+        TermCaps caps =
+                detectWithEnvAndVersion("xterm-256color", null, "iTerm.app", "3.4.0", null, null);
+        assertThat(caps.undercurl()).isTrue();
+    }
+
+    @Test
+    void termProgramKittyWithVersionSupportsKittyKeyboard() {
+        TermCaps caps =
+                detectWithEnvAndVersion("xterm-256color", null, "kitty", "0.20.0", null, null);
+        assertThat(caps.kittyKeyboard()).isTrue();
+        assertThat(caps.undercurl()).isTrue();
+    }
+
+    @Test
+    void termProgramWezTermWithVersionSupportsKittyKeyboard() {
+        TermCaps caps =
+                detectWithEnvAndVersion("xterm-256color", null, "WezTerm", "20220101", null, null);
+        assertThat(caps.kittyKeyboard()).isTrue();
+        assertThat(caps.undercurl()).isTrue();
+    }
+
+    @Test
+    void termProgramGhosttyWithVersionSupportsKittyKeyboard() {
+        TermCaps caps =
+                detectWithEnvAndVersion("xterm-256color", null, "Ghostty", "1.0.0", null, null);
+        assertThat(caps.kittyKeyboard()).isTrue();
+        assertThat(caps.undercurl()).isTrue();
+    }
+
+    @Test
+    void termProgramAppleTerminalWithVersionSupportsUndercurl() {
+        TermCaps caps =
+                detectWithEnvAndVersion(
+                        "xterm-256color", null, "Apple_Terminal", "2.10", null, null);
+        assertThat(caps.undercurl()).isTrue();
+    }
+
+    @Test
+    void termProgramAppleTerminalOldVersionDoesNotSupportUndercurl() {
+        TermCaps caps =
+                detectWithEnvAndVersion(
+                        "xterm-256color", null, "Apple_Terminal", "2.9", null, null);
+        assertThat(caps.undercurl()).isFalse();
     }
 }

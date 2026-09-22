@@ -81,6 +81,12 @@ public final class TermCaps {
     /** Whether the terminal supports overline text. */
     private final boolean overline;
 
+    /** Whether the terminal supports undercurl (curly underline) text decoration. */
+    private final boolean undercurl;
+
+    /** Whether the terminal supports the extended underline specification (styles and colors). */
+    private final boolean extendedUnderline;
+
     /** Whether the terminal supports sixel bitmap graphics (DCS sequences). */
     private final boolean sixel;
 
@@ -89,6 +95,9 @@ public final class TermCaps {
 
     /** Whether the terminal supports the iTerm2 inline image protocol (OSC 1337). */
     private final boolean iterm2Images;
+
+    /** Whether the terminal supports the Kitty keyboard protocol (progressive enhancement). */
+    private final boolean kittyKeyboard;
 
     private TermCaps(Builder b) {
         this.colors = b.colors;
@@ -103,9 +112,12 @@ public final class TermCaps {
         this.italic = b.italic;
         this.strikethrough = b.strikethrough;
         this.overline = b.overline;
+        this.undercurl = b.undercurl;
+        this.extendedUnderline = b.extendedUnderline;
         this.sixel = b.sixel;
         this.kittyGraphics = b.kittyGraphics;
         this.iterm2Images = b.iterm2Images;
+        this.kittyKeyboard = b.kittyKeyboard;
     }
 
     // ── Capability getters ────────────────────────────────────────────────
@@ -170,6 +182,16 @@ public final class TermCaps {
         return overline;
     }
 
+    /** Whether the terminal supports undercurl (curly underline) text decoration. */
+    public boolean undercurl() {
+        return undercurl;
+    }
+
+    /** Whether the terminal supports the extended underline specification (styles and colors). */
+    public boolean extendedUnderline() {
+        return extendedUnderline;
+    }
+
     /** Whether the terminal supports sixel bitmap graphics (DCS sequences). */
     public boolean sixel() {
         return sixel;
@@ -183,6 +205,11 @@ public final class TermCaps {
     /** Whether the terminal supports the iTerm2 inline image protocol (OSC 1337). */
     public boolean iterm2Images() {
         return iterm2Images;
+    }
+
+    /** Whether the terminal supports the Kitty keyboard protocol (progressive enhancement). */
+    public boolean kittyKeyboard() {
+        return kittyKeyboard;
     }
 
     // ── Terminal control helpers ──────────────────────────────────────────
@@ -367,6 +394,245 @@ public final class TermCaps {
         out.append(OSC).append("8;;").append(OSC_ST);
     }
 
+    /**
+     * Pushes the Kitty keyboard protocol flags onto the stack and activates progressive
+     * enhancement.
+     *
+     * <p>The Kitty keyboard protocol provides enhanced keyboard input with support for:
+     *
+     * <ul>
+     *   <li>Disambiguating key events (press vs release, repeat)
+     *   <li>Reporting all modifier keys (Shift, Ctrl, Alt, Super)
+     *   <li>Encoding Unicode characters directly
+     *   <li>Reporting alternate key codes
+     * </ul>
+     *
+     * <p>Flags (bitwise OR):
+     *
+     * <ul>
+     *   <li>1 — Disambiguate escape codes
+     *   <li>2 — Report event types (press, release, repeat)
+     *   <li>4 — Report alternate keys
+     *   <li>8 — Report all keys as escape codes
+     *   <li>16 — Report associated text
+     * </ul>
+     *
+     * <p>Common flag combinations:
+     *
+     * <ul>
+     *   <li>{@code 1} — Basic enhancement (disambiguate only)
+     *   <li>{@code 3} — Enhanced (disambiguate + event types)
+     *   <li>{@code 7} — Full (disambiguate + event types + alternate keys)
+     * </ul>
+     *
+     * <p>Use {@link #popKittyKeyboard(Appendable)} to restore the previous state.
+     *
+     * @param out terminal output
+     * @param flags bitwise OR of protocol flags (typically 1, 3, or 7)
+     * @throws java.io.IOException if writing fails
+     * @see <a href="https://sw.kovidgoyal.net/kitty/keyboard-protocol/">Kitty keyboard protocol</a>
+     */
+    public static void pushKittyKeyboard(Appendable out, int flags) throws java.io.IOException {
+        out.append(CSI).append(">").append(String.valueOf(flags)).append("u");
+    }
+
+    /**
+     * Pops the Kitty keyboard protocol flags from the stack, restoring the previous state.
+     *
+     * <p>This should be called before program exit to restore the terminal's original keyboard
+     * handling mode.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void popKittyKeyboard(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("<u");
+    }
+
+    /**
+     * Queries the terminal for Kitty keyboard protocol support.
+     *
+     * <p>The terminal will respond with {@code CSI ? <flags> u} if supported, where {@code flags}
+     * indicates the currently active protocol level. If the terminal does not support the protocol,
+     * no response is sent.
+     *
+     * <p>This query should be sent in raw mode, and the response read with a timeout (typically
+     * 100-500ms).
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void queryKittyKeyboard(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("?u");
+    }
+
+    /**
+     * Returns {@code true} if {@code sequence} is a Kitty keyboard protocol query response.
+     *
+     * <p>The expected form is {@code CSI ? <flags> u}.
+     *
+     * @param sequence input sequence to test
+     * @return {@code true} when the sequence is a Kitty keyboard protocol response
+     */
+    public static boolean isKittyKeyboardResponse(String sequence) {
+        return sequence != null && sequence.startsWith(CSI + "?") && sequence.endsWith("u");
+    }
+
+    /**
+     * Enables undercurl (curly underline) text decoration.
+     *
+     * <p>Undercurl renders text with a wavy/curly underline, commonly used in editors to indicate
+     * spelling or grammar errors. This uses the SGR parameter {@code 4:3}.
+     *
+     * <p>Not all terminals support undercurl. Check {@link #undercurl()} before using.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void enableUndercurl(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:3m");
+    }
+
+    /**
+     * Disables undercurl (curly underline) text decoration.
+     *
+     * <p>This resets the underline style to none using SGR parameter {@code 4:0}.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void disableUndercurl(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:0m");
+    }
+
+    /**
+     * Enables single underline text decoration.
+     *
+     * <p>This is the standard underline style using SGR parameter {@code 4:1}.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void enableSingleUnderline(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:1m");
+    }
+
+    /**
+     * Enables double underline text decoration.
+     *
+     * <p>Double underline renders text with two parallel underlines using SGR parameter {@code
+     * 4:2}.
+     *
+     * <p>Not all terminals support double underline. Check {@link #extendedUnderline()} before
+     * using.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void enableDoubleUnderline(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:2m");
+    }
+
+    /**
+     * Enables dotted underline text decoration.
+     *
+     * <p>Dotted underline renders text with a dotted line underneath using SGR parameter {@code
+     * 4:4}.
+     *
+     * <p>Not all terminals support dotted underline. Check {@link #extendedUnderline()} before
+     * using.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void enableDottedUnderline(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:4m");
+    }
+
+    /**
+     * Enables dashed underline text decoration.
+     *
+     * <p>Dashed underline renders text with a dashed line underneath using SGR parameter {@code
+     * 4:5}.
+     *
+     * <p>Not all terminals support dashed underline. Check {@link #extendedUnderline()} before
+     * using.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void enableDashedUnderline(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:5m");
+    }
+
+    /**
+     * Disables all underline text decorations.
+     *
+     * <p>This resets the underline style to none using SGR parameter {@code 4:0}.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void disableUnderline(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("4:0m");
+    }
+
+    /**
+     * Sets the underline color using RGB values.
+     *
+     * <p>This uses the extended underline specification's color support via SGR parameter {@code
+     * 58:2:r:g:b}.
+     *
+     * <p>Not all terminals support underline colors. Check {@link #extendedUnderline()} before
+     * using.
+     *
+     * @param out terminal output
+     * @param r red component (0-255)
+     * @param g green component (0-255)
+     * @param b blue component (0-255)
+     * @throws java.io.IOException if writing fails
+     */
+    public static void setUnderlineColor(Appendable out, int r, int g, int b)
+            throws java.io.IOException {
+        out.append(CSI)
+                .append("58:2:")
+                .append(String.valueOf(r))
+                .append(":")
+                .append(String.valueOf(g))
+                .append(":")
+                .append(String.valueOf(b))
+                .append("m");
+    }
+
+    /**
+     * Sets the underline color using a 256-color palette index.
+     *
+     * <p>This uses the extended underline specification's color support via SGR parameter {@code
+     * 58:5:n}.
+     *
+     * <p>Not all terminals support underline colors. Check {@link #extendedUnderline()} before
+     * using.
+     *
+     * @param out terminal output
+     * @param index color index (0-255)
+     * @throws java.io.IOException if writing fails
+     */
+    public static void setUnderlineColor(Appendable out, int index) throws java.io.IOException {
+        out.append(CSI).append("58:5:").append(String.valueOf(index)).append("m");
+    }
+
+    /**
+     * Resets the underline color to the default.
+     *
+     * <p>This uses SGR parameter {@code 59}.
+     *
+     * @param out terminal output
+     * @throws java.io.IOException if writing fails
+     */
+    public static void resetUnderlineColor(Appendable out) throws java.io.IOException {
+        out.append(CSI).append("59m");
+    }
+
     // ── Detection ─────────────────────────────────────────────────────────
 
     /**
@@ -528,6 +794,8 @@ public final class TermCaps {
                     .italic(true)
                     .strikethrough(true)
                     .overline(true)
+                    .undercurl(true) // Windows Terminal 1.19+
+                    .extendedUnderline(true) // Windows Terminal 1.19+
                     .sixel(true); // Windows Terminal 1.22+ (August 2024)
             return;
         }
@@ -546,6 +814,7 @@ public final class TermCaps {
 
         // TERM_PROGRAM — self-reported by several terminals
         String termProgram = env.get("TERM_PROGRAM");
+        String termProgramVersion = env.get("TERM_PROGRAM_VERSION");
         if (termProgram != null) {
             switch (termProgram) {
                 case "iTerm.app":
@@ -560,9 +829,23 @@ public final class TermCaps {
                             .italic(true)
                             .strikethrough(true)
                             .overline(true)
-                            .sixel(true) // iTerm2 3.3.0+
-                            .kittyGraphics(true) // iTerm2 added Kitty graphics in 2024
                             .iterm2Images(true);
+                    // iTerm2 3.3.0+ supports sixel
+                    if (compareVersion(termProgramVersion, "3.3.0") >= 0) {
+                        b.sixel(true);
+                    }
+                    // iTerm2 3.5.0+ supports Kitty graphics protocol
+                    if (compareVersion(termProgramVersion, "3.5.0") >= 0) {
+                        b.kittyGraphics(true);
+                    }
+                    // iTerm2 3.5.0+ supports Kitty keyboard protocol
+                    if (compareVersion(termProgramVersion, "3.5.0") >= 0) {
+                        b.kittyKeyboard(true);
+                    }
+                    // iTerm2 3.4.0+ supports undercurl and extended underline
+                    if (compareVersion(termProgramVersion, "3.4.0") >= 0) {
+                        b.undercurl(true).extendedUnderline(true);
+                    }
                     break;
                 case "WezTerm":
                     b.colors(16_777_216)
@@ -579,7 +862,13 @@ public final class TermCaps {
                             .overline(true)
                             .sixel(true)
                             .kittyGraphics(true)
-                            .iterm2Images(true);
+                            .iterm2Images(true)
+                            .undercurl(true)
+                            .extendedUnderline(true);
+                    // WezTerm 20220101+ supports Kitty keyboard protocol
+                    if (compareVersion(termProgramVersion, "20220101") >= 0) {
+                        b.kittyKeyboard(true);
+                    }
                     break;
                 case "kitty":
                     b.colors(16_777_216)
@@ -593,11 +882,21 @@ public final class TermCaps {
                             .italic(true)
                             .strikethrough(true)
                             .overline(true)
-                            .kittyGraphics(true); // kitty does not support sixel by design
+                            .kittyGraphics(true) // kitty does not support sixel by design
+                            .undercurl(true)
+                            .extendedUnderline(true);
+                    // Kitty 0.20.0+ supports Kitty keyboard protocol (it invented it)
+                    if (compareVersion(termProgramVersion, "0.20.0") >= 0) {
+                        b.kittyKeyboard(true);
+                    }
                     break;
                 case "Apple_Terminal":
                     if (b.colors < 256) b.colors(256);
                     b.settableTitle(true).unicode(true);
+                    // Apple Terminal 2.10+ (macOS 10.15+) supports undercurl
+                    if (compareVersion(termProgramVersion, "2.10") >= 0) {
+                        b.undercurl(true);
+                    }
                     break;
                 case "Ghostty":
                 case "ghostty":
@@ -613,7 +912,12 @@ public final class TermCaps {
                             .italic(true)
                             .strikethrough(true)
                             .overline(true)
-                            .kittyGraphics(true);
+                            .kittyGraphics(true)
+                            .undercurl(true);
+                    // Ghostty 1.0.0+ supports Kitty keyboard protocol
+                    if (compareVersion(termProgramVersion, "1.0.0") >= 0) {
+                        b.kittyKeyboard(true);
+                    }
                     break;
                 default:
                     break;
@@ -642,11 +946,74 @@ public final class TermCaps {
         // assume a VT-capable console host (Win10 1511+) with conservative caps.
         String os = System.getProperty("os.name", "").toLowerCase();
         if (os.contains("windows") && b.colors == 0) {
-            b.colors(8).altScreen(true).mouse(true).unicode(true);
+            b.colors(256).altScreen(true).mouse(true).unicode(true);
         }
     }
 
     // ── Layer 3: terminfo binary ──────────────────────────────────────────
+
+    // ── Version comparison helper ─────────────────────────────────────────
+
+    /**
+     * Compares two version strings in the format "major.minor.patch" or "YYYYMMDD".
+     *
+     * <p>Returns:
+     *
+     * <ul>
+     *   <li>negative if {@code version} is less than {@code reference}
+     *   <li>zero if {@code version} equals {@code reference}
+     *   <li>positive if {@code version} is greater than {@code reference}
+     *   <li>-1 if {@code version} is null or cannot be parsed
+     * </ul>
+     *
+     * <p>Supports:
+     *
+     * <ul>
+     *   <li>Semantic versioning: "1.2.3", "0.20.0"
+     *   <li>Date-based versioning: "20220101" (WezTerm style)
+     *   <li>Two-part versions: "2.10" (Apple Terminal style)
+     * </ul>
+     *
+     * @param version the version string to compare (may be null)
+     * @param reference the reference version string
+     * @return comparison result
+     */
+    private static int compareVersion(String version, String reference) {
+        if (version == null || version.isEmpty()) return -1;
+        if (reference == null || reference.isEmpty()) return 1;
+
+        // Try numeric comparison first (for date-based versions like "20220101")
+        try {
+            long v = Long.parseLong(version);
+            long r = Long.parseLong(reference);
+            return Long.compare(v, r);
+        } catch (NumberFormatException e) {
+            // Not purely numeric, fall through to component-wise comparison
+        }
+
+        // Split on dots and compare component-wise
+        String[] vParts = version.split("\\.");
+        String[] rParts = reference.split("\\.");
+        int maxLen = Math.max(vParts.length, rParts.length);
+
+        for (int i = 0; i < maxLen; i++) {
+            int vNum = i < vParts.length ? parseVersionComponent(vParts[i]) : 0;
+            int rNum = i < rParts.length ? parseVersionComponent(rParts[i]) : 0;
+            if (vNum != rNum) {
+                return Integer.compare(vNum, rNum);
+            }
+        }
+        return 0;
+    }
+
+    private static int parseVersionComponent(String component) {
+        if (component == null || component.isEmpty()) return 0;
+        try {
+            return Integer.parseInt(component);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     static void applyTerminfo(Builder b, String term) {
         if (term == null || term.isEmpty()) return;
@@ -675,9 +1042,12 @@ public final class TermCaps {
         private boolean italic;
         private boolean strikethrough;
         private boolean overline;
+        private boolean undercurl;
+        private boolean extendedUnderline;
         private boolean sixel;
         private boolean kittyGraphics;
         private boolean iterm2Images;
+        private boolean kittyKeyboard;
 
         private Builder() {}
 
@@ -694,9 +1064,12 @@ public final class TermCaps {
             this.italic = base.italic;
             this.strikethrough = base.strikethrough;
             this.overline = base.overline;
+            this.undercurl = base.undercurl;
+            this.extendedUnderline = base.extendedUnderline;
             this.sixel = base.sixel;
             this.kittyGraphics = base.kittyGraphics;
             this.iterm2Images = base.iterm2Images;
+            this.kittyKeyboard = base.kittyKeyboard;
         }
 
         /** Returns the currently set colors value. */
@@ -764,6 +1137,16 @@ public final class TermCaps {
             return this;
         }
 
+        public Builder undercurl(boolean v) {
+            this.undercurl = v;
+            return this;
+        }
+
+        public Builder extendedUnderline(boolean v) {
+            this.extendedUnderline = v;
+            return this;
+        }
+
         public Builder sixel(boolean v) {
             this.sixel = v;
             return this;
@@ -776,6 +1159,11 @@ public final class TermCaps {
 
         public Builder iterm2Images(boolean v) {
             this.iterm2Images = v;
+            return this;
+        }
+
+        public Builder kittyKeyboard(boolean v) {
+            this.kittyKeyboard = v;
             return this;
         }
 

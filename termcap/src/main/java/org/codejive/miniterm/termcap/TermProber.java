@@ -241,6 +241,20 @@ public final class TermProber {
         }
     }
 
+    /**
+     * Applies a Kitty keyboard protocol query response to the given {@link TermCaps.Builder}.
+     *
+     * @param seq the raw Kitty keyboard protocol response sequence
+     * @param b the builder to update
+     * @return {@code true} if {@code seq} was a valid response and the builder was updated
+     */
+    public static boolean applyKittyKeyboard(String seq, TermCaps.Builder b) {
+        if (!TermCaps.isKittyKeyboardResponse(seq)) return false;
+        // If we got a response, the terminal supports the Kitty keyboard protocol
+        b.kittyKeyboard(true);
+        return true;
+    }
+
     // ── Response reading ──────────────────────────────────────────────────
 
     /**
