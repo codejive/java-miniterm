@@ -29,9 +29,30 @@ final class TermCapsTestHelper {
      */
     static TermCaps detectWithEnv(
             String term, String colorterm, String termProgram, String vteVersion, String tmux) {
+        return detectWithEnvAndVersion(term, colorterm, termProgram, null, vteVersion, tmux);
+    }
+
+    /**
+     * Apply Layer 1 + Layer 2 with injected environment variable values including version.
+     *
+     * @param term value of {@code $TERM}
+     * @param colorterm value of {@code $COLORTERM} (may be null)
+     * @param termProgram value of {@code $TERM_PROGRAM} (may be null)
+     * @param termProgramVersion value of {@code $TERM_PROGRAM_VERSION} (may be null)
+     * @param vteVersion value of {@code $VTE_VERSION} (may be null)
+     * @param tmux value of {@code $TMUX} (may be null; any non-null value means "inside tmux")
+     */
+    static TermCaps detectWithEnvAndVersion(
+            String term,
+            String colorterm,
+            String termProgram,
+            String termProgramVersion,
+            String vteVersion,
+            String tmux) {
         Map<String, String> env = new HashMap<String, String>();
         if (colorterm != null) env.put("COLORTERM", colorterm);
         if (termProgram != null) env.put("TERM_PROGRAM", termProgram);
+        if (termProgramVersion != null) env.put("TERM_PROGRAM_VERSION", termProgramVersion);
         if (vteVersion != null) env.put("VTE_VERSION", vteVersion);
         if (tmux != null) env.put("TMUX", tmux);
 
