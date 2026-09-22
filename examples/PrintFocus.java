@@ -1,7 +1,7 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS org.codejive.miniterm:miniterm${miniterm.ffm:}:${miniterm.version:0.1.7}
-//DEPS org.codejive.miniterm:ansiparser:${miniterm.version:0.1.7}
-//DEPS org.codejive.miniterm:termcap:${miniterm.version:0.1.7}
+//DEPS org.codejive.miniterm:miniterm${miniterm.ffm:}:${miniterm.version:0.2.0}
+//DEPS org.codejive.miniterm:ansiparser:${miniterm.version:0.2.0}
+//DEPS org.codejive.miniterm:termcap:${miniterm.version:0.2.0}
 
 package examples;
 

@@ -140,7 +140,7 @@ MouseTracking.enableEncoding(terminal, MouseTracking.Encoding.SGR);
 ### JBang
 
 ```java
-//DEPS org.codejive.miniterm:mousetrack:0.1.7
+//DEPS org.codejive.miniterm:mousetrack:0.2.0
 ```
 
 ### Maven
@@ -149,14 +149,14 @@ MouseTracking.enableEncoding(terminal, MouseTracking.Encoding.SGR);
 <dependency>
     <groupId>org.codejive.miniterm</groupId>
     <artifactId>mousetrack</artifactId>
-    <version>0.1.7</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```kotlin
-implementation("org.codejive.miniterm:mousetrack:0.1.7")
+implementation("org.codejive.miniterm:mousetrack:0.2.0")
 ```
 
 ## Building
